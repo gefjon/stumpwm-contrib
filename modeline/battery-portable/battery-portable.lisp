@@ -198,30 +198,14 @@
           (if (string= (sysfs-field path "present") "0")
               :unknown
               (let* ((state (sysfs-field path "status"))
-                     (consumption (or (sysfs-int-field-or-nil path "power_now")
-                                      (sysfs-int-field-or-nil path "current_now")
-                                      (return-from state-of :unknown)))
-                     (curr (or (sysfs-int-field-or-nil path "energy_now")
-                               ;; energy_* seems not to be there on
-                               ;; some boxes. Strange...
-                               (sysfs-int-field-or-nil path "charge_now")
-                               (return-from state-of :unknown)))
-                     (full (or (sysfs-int-field-or-nil path "energy_full")
-                               (sysfs-int-field-or-nil path "charge_full")
-                               (return-from state-of :unknown)))
-                     (percent (* 100 (/ curr full))))
+                     (percent (or (sysfs-int-field-or-nil path "capacity")
+                                  (return-from state-of :unknown))))
                 (cond
                   ((string= state "Full") (values :charged percent))
                   ((string= state "Discharging")
-                   (values :discharging percent
-                           (if (zerop consumption)
-                               0
-                               (* 3600 (/ curr consumption)))))
+                   (values :discharging percent))
                   ((string= state "Charging")
-                   (values :charging percent
-                           (if (zerop consumption)
-                               0
-                               (* 3600 (/ (- full curr) consumption)))))
+                   (values :charging percent))
                   (t :unknown)))))
       (t () :unknown))))
 
