@@ -67,16 +67,15 @@ not available). Don't make calculation more than once a second."
                   *prev-result* (list cpu-result sys-result io-result)))))))
   (apply 'values *prev-result*))
 
-(defun fmt-cpu-usage ()
-  "Returns a string representing current the percent of average CPU
-  utilization."
+(defun fmt-cpu-usage (&optional ml)
+  (declare (ignore ml))
+  "Returns a string representing current the percent of average CPU utilization."
   (let ((cpu (truncate (* 100 (current-cpu-usage)))))
     (format nil "CPU: ^[~A~3D%^] " (bar-zone-color cpu) cpu)))
 
-(defun fmt-cpu-usage-bar (ml &optional (width *cpu-usage-bar-width*) (full *cpu-usage-bar-full*) (empty *cpu-usage-bar-empty*))
-  "Returns a coloured bar-graph representing the current percent of average CPU
-utilization."
+(defun fmt-cpu-usage-bar (&optional ml (width *cpu-usage-bar-width*) (full *cpu-usage-bar-full*) (empty *cpu-usage-bar-empty*))
   (declare (ignore ml))
+  "Returns a coloured bar-graph representing the current percent of average CPU utilization."
   (let ((cpu (truncate (* 100 (current-cpu-usage)))))
     (stumpwm::bar cpu width full empty)))
 
@@ -89,7 +88,8 @@ utilization."
             (when (string= (car split) field) (return (cadr split)))))
         "")))
 
-(defun fmt-cpu-freq ()
+(defun fmt-cpu-freq (&optional ml)
+  (declare (ignore ml))
   "Returns a string representing the current CPU frequency (especially useful for laptop users.)"
   (let ((mhz (parse-integer (get-proc-file-field "/proc/cpuinfo" "cpu MHz")
                             :junk-allowed t)))
@@ -116,9 +116,10 @@ utilization."
              (make-pathname :directory (pathname-directory (first sys-dir))
                             :name "temp"))))))
 
-(defun fmt-cpu-temp ()
+(defun fmt-cpu-temp (&optional ml)
+  (declare (ignore ml))
   "Returns a string representing the current CPU temperature."
-  (format nil "~,1F°C"
+  (format nil "~,1fc" ;; "~,1F°C"
           (case (car *acpi-thermal-zone*)
             (:procfs (parse-integer
                       (get-proc-file-field (cdr *acpi-thermal-zone*) "temperature")
@@ -126,7 +127,7 @@ utilization."
             (:sysfs   (with-open-file (f (cdr *acpi-thermal-zone*))
                         (/ (read f) 1000))))))
 
-(defun cpu-modeline (ml)
+(defun cpu-modeline (&optional ml)
   (declare (ignore ml))
   (format-expand *cpu-formatters-alist*
                  *cpu-modeline-fmt*))
@@ -137,7 +138,7 @@ utilization."
     (#\f  fmt-cpu-freq)
     (#\t  fmt-cpu-temp)))
 
-(defvar *cpu-modeline-fmt* "%c (%f) %t"
+(defvar *cpu-modeline-fmt* "%c @ %t : %C"
   "The default value for displaying cpu information on the modeline.
 
 @table @asis
