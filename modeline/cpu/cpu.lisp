@@ -138,7 +138,7 @@ not available). Don't make calculation more than once a second."
     (#\f  fmt-cpu-freq)
     (#\t  fmt-cpu-temp)))
 
-(defvar *cpu-modeline-fmt* "%c @ %t %C"
+(defvar *cpu-modeline-fmt* "%c (%f) %t"
   "The default value for displaying cpu information on the modeline.
 
 @table @asis
